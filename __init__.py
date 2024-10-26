@@ -1,13 +1,16 @@
 import bpy
 
-from .App.Interfaces import INTERFACES_Classes
+from .main import MAIN_Classes
+
+from .App.GLOBAL import setProperties, delProperties
+
 from .App.Operators import OPERATORS_Classes
+from .App.Interfaces import INTERFACES_Classes
 
-from .Components.ExtensionsComponent import EXTENSIONS_Classes, EXTENSIONS_Props, EXTENSIONS_delProps
-from .Components.TemplatesComponent import TEMPLATES_Classes, TEMPLATES_Props, TEMPLATES_delProps
-from .main import MAIN_Classes, MAIN_Props, MAIN_delProps
+from .Components.ExtensionsComponent import EXTENSIONS_Classes
+from .Components.TemplatesComponent import TEMPLATES_Classes
 
-from .Defers.Control import EXT_clearProperties
+from .Defers.Control import EXT_updateAllProperties, EXT_updateTemplateProperties
 
 # Set information about addon
 # Addon Info
@@ -16,7 +19,7 @@ bl_info = {
     "author": "https://github.com/maqq1e/BlenderScriptManager",
     "description": "Easy way manage your custom scripts",
     "blender": (4, 2, 0),
-    "version": (1, 0, 0),
+    "version": (1, 2, 0),
 }
 
 # Preferences Panel
@@ -29,8 +32,10 @@ class SETTING_ManagerPreferences(bpy.types.AddonPreferences):
         description="Select the directory containing the Python scripts",
         default="",
         subtype='DIR_PATH',
-        update=EXT_clearProperties
+        update=EXT_updateAllProperties
     ) # type: ignore
+    
+    addon_name: bpy.props.StringProperty(default=__name__)
     
     links_hide: bpy.props.BoolProperty(default=False)
     
@@ -67,18 +72,14 @@ UsesClasses.extend(MAIN_Classes)
 
 # Initialization Properties
 def Props():
-    MAIN_Props()
-    EXTENSIONS_Props()
-    TEMPLATES_Props()
+    setProperties()
 def delProps():
-    MAIN_delProps()
-    EXTENSIONS_delProps()
-    TEMPLATES_delProps()
+    delProperties()
 
 # After Load
 @bpy.app.handlers.persistent
-def after_load(scene):
-    EXT_clearProperties(scene, bpy.context)
+def after_load(context):
+    EXT_updateAllProperties(None, bpy.context)
 
 # Handler for Event
 event_handler = object()
@@ -95,9 +96,8 @@ def register():
     subscribe_to = bpy.types.Window, "workspace"
 
     def change_template(context):
-        if bpy.context.workspace.BSM_Templates == "":
-            return None
-        bpy.context.workspace.BSM_Templates = bpy.context.workspace.BSM_Templates # Active update event for property 
+        if len(bpy.context.scene.CSM_Database) > 0:
+            EXT_updateTemplateProperties(None, bpy.context)
     bpy.msgbus.subscribe_rna(
         key=subscribe_to,
         owner=event_handler,
@@ -105,9 +105,8 @@ def register():
         notify=change_template,
     )
     bpy.msgbus.publish_rna(key=subscribe_to)
-    
-    bpy.app.handlers.load_post.append(after_load)
 
+    bpy.app.handlers.load_post.append(after_load) # Load datas after load blender
 
 def unregister():
     for useClass in UsesClasses:
@@ -121,6 +120,4 @@ def unregister():
 
 if __name__ == "__main__":
     register()
-    
-    
     

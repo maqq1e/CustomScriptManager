@@ -1,8 +1,16 @@
-import bpy, os
+import bpy
 
-from ..Defers.Control import makeTemplateSave
+def makeTemplateSave(self, context):
+    context.scene.CSM_isSave = True
 
 ### Classes
+
+class INTERFACE_ExtensionsClasses(bpy.types.PropertyGroup):
+    name: bpy.props.StringProperty()
+
+class INTERFACE_ExtensionsStack(bpy.types.PropertyGroup):
+    name: bpy.props.StringProperty()
+    classes: bpy.props.CollectionProperty(type=INTERFACE_ExtensionsClasses)
 
 class INTERFACE_Args(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty()
@@ -32,14 +40,13 @@ class INTERFACE_Scripts(bpy.types.PropertyGroup):
     description: bpy.props.StringProperty()
     icon: bpy.props.StringProperty()
     path: bpy.props.StringProperty()
-    status: bpy.props.BoolProperty()
+    status: bpy.props.BoolProperty(name="Arguments")
     args: bpy.props.CollectionProperty(type=INTERFACE_Args)
 
 class INTERFACE_Extensions(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty()
-    status: bpy.props.BoolProperty()
     
-class INTERFACE_TemplateName(bpy.types.PropertyGroup):
+class INTERFACE_Database(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty(update=makeTemplateSave)
     scripts: bpy.props.CollectionProperty(type=INTERFACE_Scripts)
     extensions: bpy.props.CollectionProperty(type=INTERFACE_Extensions)
@@ -49,8 +56,10 @@ class INTERFACE_Files(bpy.types.PropertyGroup):
 
 INTERFACES_Classes = [
     INTERFACE_Args,
+    INTERFACE_ExtensionsClasses,
+    INTERFACE_ExtensionsStack,
     INTERFACE_Scripts,
     INTERFACE_Extensions,
-    INTERFACE_TemplateName,    
+    INTERFACE_Database,    
     INTERFACE_Files,
 ]
