@@ -1,9 +1,9 @@
-# BSM - Blender Script Manager
+# CSM - Custom Script Manager
 ![Preview](https://public-files.gumroad.com/095rbpxkwmfs1xrwzabozt13ylxt)
 
 # Installation
 
-# [Github Releases](https://github.com/maqq1e/BlenderScriptManager/releases) & [Gumroad](https://maqq1e.gumroad.com/l/customscriptmanager) & [Blender Extensions](https://extensions.blender.org/approval-queue/blender-script-manager/)
+# [Github Releases](https://github.com/maqq1e/CustomScriptManager/releases) & [Gumroad](https://maqq1e.gumroad.com/l/customscriptmanager) & [Blender Extensions](https://extensions.blender.org/approval-queue/blender-script-manager/)
 
 # Features
 - Can be use separate templates for each workspace
@@ -13,7 +13,7 @@
 
 # Usage
 
-**For more specific information you should look at [FULL-SIZE DOCUMENTATION](https://github.com/maqq1e/BlenderScriptManager/wiki)** 
+**For more specific information you should look at [FULL-SIZE DOCUMENTATION](https://github.com/maqq1e/CustomScriptManager/wiki)** 
 
 - Insert path of target folder in addon preferences
 - Create your first .json template file
