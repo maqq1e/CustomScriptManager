@@ -50,7 +50,7 @@ class SETTING_ManagerPreferences(bpy.types.AddonPreferences):
             
         if self.links_hide:
             op = layout.operator('wm.url_open', text="Project Git", icon="URL")
-            op.url = "https://github.com/maqq1e/BlenderScriptManager"        
+            op.url = "https://github.com/maqq1e/CustomScriptManager"        
             row = layout.row()
             op = row.operator('wm.url_open', text="Github", icon="URL")
             op.url = "https://github.com/maqq1e"
