@@ -8,7 +8,7 @@ maintainer = "maqq1e - github.com/maqq1e"
 type = "add-on"
 
 # # Optional: link to documentation, support, source files, etc
-# website = "https://github.com/maqq1e/BlenderScriptManager"
+# website = "https://github.com/maqq1e/CustomScriptManager"
 
 blender_version_min = "4.2.0"
 
