@@ -18,7 +18,7 @@ bl_info = {
     "name": "CustomScriptManager",
     "author": "https://github.com/maqq1e/CustomScriptManager",
     "description": "Easy way manage your custom scripts",
-    "blender": (4, 2, 0),
+    "blender": (3, 6, 0),
     "version": (1, 2, 0),
 }
 
