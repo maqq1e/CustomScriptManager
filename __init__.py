@@ -15,8 +15,8 @@ from .Defers.Control import EXT_updateAllProperties, EXT_updateTemplatePropertie
 # Set information about addon
 # Addon Info
 bl_info = {
-    "name": "Custom Script Manager",
-    "author": "https://github.com/maqq1e/BlenderScriptManager",
+    "name": "CustomScriptManager",
+    "author": "https://github.com/maqq1e/CustomScriptManager",
     "description": "Easy way manage your custom scripts",
     "blender": (4, 2, 0),
     "version": (1, 2, 0),
@@ -50,7 +50,7 @@ class SETTING_ManagerPreferences(bpy.types.AddonPreferences):
             
         if self.links_hide:
             op = layout.operator('wm.url_open', text="Project Git", icon="URL")
-            op.url = "https://github.com/maqq1e/BlenderScriptManager"        
+            op.url = "https://github.com/maqq1e/CustomScriptManager"        
             row = layout.row()
             op = row.operator('wm.url_open', text="Github", icon="URL")
             op.url = "https://github.com/maqq1e"
@@ -72,7 +72,7 @@ UsesClasses.extend(MAIN_Classes)
 
 # Initialization Properties
 def Props():
-    setProperties()
+    setProperties(__name__)
 def delProps():
     delProperties()
 
