@@ -6,6 +6,7 @@ from ..App.Interfaces import *
 from ..App.Datas import TEMPLATES
 
 class TEMPLATE_AddTemplateOperator(bpy.types.Operator):
+    """Add new template"""
     bl_idname = TEMPLATES.templates_add_item.value
     bl_label = "Add Template"
 
@@ -13,11 +14,12 @@ class TEMPLATE_AddTemplateOperator(bpy.types.Operator):
 
         CMP_addTemplate(context)
 
-        context.scene.BSM_isSave = True
+        context.scene.CSM_isSave = True
 
         return {'FINISHED'}
 
 class TEMPLATE_RemoveTemplateOperator(bpy.types.Operator):
+    """Remove current template"""
     bl_idname = TEMPLATES.templates_remove_item.value
     bl_label = "Remove Template?"
     
@@ -27,7 +29,7 @@ class TEMPLATE_RemoveTemplateOperator(bpy.types.Operator):
         
         CMP_removeTemplate(context, self.index)
 
-        context.scene.BSM_isSave = True
+        context.scene.CSM_isSave = True
 
         return {'FINISHED'}
     
@@ -36,6 +38,7 @@ class TEMPLATE_RemoveTemplateOperator(bpy.types.Operator):
         return context.window_manager.invoke_confirm(self, event)
 
 class TEMPLATE_EditTemplateOperator(bpy.types.Operator):
+    """Edit current template"""
     bl_idname = TEMPLATES.templates_edit_item.value
     bl_label = "Edit Template"
     
@@ -49,7 +52,7 @@ class TEMPLATE_EditTemplateOperator(bpy.types.Operator):
         
         CMP_editTemplate(context, self.template_index, self.name)
         
-        context.scene.BSM_isSave = True
+        context.scene.CSM_isSave = True
 
         return {'FINISHED'}
     
@@ -69,6 +72,7 @@ class TEMPLATE_EditTemplateOperator(bpy.types.Operator):
         return context.window_manager.invoke_props_dialog(self)
  
 class TEMPLATE_AddScriptOperator(bpy.types.Operator):
+    """Add Script in current template"""
     bl_idname = TEMPLATES.scripts_add_item.value
     bl_label = "Add Script"
 
@@ -86,7 +90,7 @@ class TEMPLATE_AddScriptOperator(bpy.types.Operator):
         
         CMP_addScript(context, self.template_index, self.name, self.description, self.icon, self.path)
 
-        context.scene.BSM_isSave = True
+        context.scene.CSM_isSave = True
 
         return {'FINISHED'}
     
@@ -95,6 +99,7 @@ class TEMPLATE_AddScriptOperator(bpy.types.Operator):
         return context.window_manager.invoke_props_dialog(self)
     
 class TEMPLATE_RemoveScriptOperator(bpy.types.Operator):
+    """Remove Script from current template"""
     bl_idname = TEMPLATES.scripts_remove_item.value
     bl_label = "Remove Script from Template?"
     
@@ -105,7 +110,7 @@ class TEMPLATE_RemoveScriptOperator(bpy.types.Operator):
         
         CMP_removeScript(context, self.template_index, self.script_index)
         
-        context.scene.BSM_isSave = True
+        context.scene.CSM_isSave = True
 
         return {'FINISHED'}
     
@@ -114,6 +119,7 @@ class TEMPLATE_RemoveScriptOperator(bpy.types.Operator):
         return context.window_manager.invoke_confirm(self, event)
     
 class TEMPLATE_EditScriptOperator(bpy.types.Operator):
+    """Edit current Script"""
     bl_idname = TEMPLATES.scripts_edit_item.value
     bl_label = "Edit Script"
     
@@ -132,7 +138,7 @@ class TEMPLATE_EditScriptOperator(bpy.types.Operator):
         
         CMP_editScript(context, self.template_index, self.script_index, self.name, self.description, self.icon, self.path)
         
-        context.scene.BSM_isSave = True
+        context.scene.CSM_isSave = True
 
         return {'FINISHED'}
     
@@ -141,6 +147,7 @@ class TEMPLATE_EditScriptOperator(bpy.types.Operator):
         return context.window_manager.invoke_props_dialog(self)
 
 class TEMPLATE_AddArgsOperator(bpy.types.Operator):
+    """Add arguments in current Script"""
     bl_idname = TEMPLATES.args_add_item.value
     bl_label = "Add Arg Item"
 
@@ -163,7 +170,7 @@ class TEMPLATE_AddArgsOperator(bpy.types.Operator):
         
         CMP_addArgs(context, self.template_index, self.script_index, self.type, self.name, self.description, self.value)
 
-        context.scene.BSM_isSave = True
+        context.scene.CSM_isSave = True
 
         return {'FINISHED'}
     
@@ -188,6 +195,7 @@ class TEMPLATE_AddArgsOperator(bpy.types.Operator):
         return context.window_manager.invoke_props_dialog(self)
 
 class TEMPLATE_EditArgsOperator(bpy.types.Operator):
+    """Edit arguments in current Script"""
     bl_idname = TEMPLATES.args_edit_item.value
     bl_label = "Edit Arg Item"
     
@@ -211,7 +219,7 @@ class TEMPLATE_EditArgsOperator(bpy.types.Operator):
         
         CMP_editArgs(context, self.template_index, self.script_index, self.arg_index, self.type, self.name, self.description, self.value[0])
         
-        context.scene.BSM_isSave = True
+        context.scene.CSM_isSave = True
 
         return {'FINISHED'}
     
@@ -237,6 +245,7 @@ class TEMPLATE_EditArgsOperator(bpy.types.Operator):
         return context.window_manager.invoke_props_dialog(self)
     
 class TEMPLATE_RemoveArgsOperator(bpy.types.Operator):
+    """Remove arguments from current Script"""
     bl_idname = TEMPLATES.args_remove_item.value
     bl_label = "Remove Argument from Script?"
     
@@ -248,7 +257,7 @@ class TEMPLATE_RemoveArgsOperator(bpy.types.Operator):
         
         CMP_removeArgs(context, self.template_index, self.script_index, self.arg_index)
         
-        context.scene.BSM_isSave = True
+        context.scene.CSM_isSave = True
 
         return {'FINISHED'}
     
@@ -267,20 +276,3 @@ TEMPLATES_Classes = [
     TEMPLATE_EditArgsOperator,
     TEMPLATE_RemoveArgsOperator
 ]
-
-def TEMPLATES_Props():
-    bpy.types.WorkSpace.BSM_Templates = bpy.props.EnumProperty(items=getTemplateItems, update=changeTemplateExtensions)
-    
-    bpy.types.Scene.BSM_Templates_collection = bpy.props.CollectionProperty(type=INTERFACE_TemplateName)
-
-    bpy.types.Scene.BSM_isSave = bpy.props.BoolProperty(default=False)
-    
-    bpy.types.Scene.BSM_activeObject = bpy.props.PointerProperty(type=bpy.types.Object)
-
-def TEMPLATES_delProps():
-
-    del bpy.types.WorkSpace.BSM_Templates
-    del bpy.types.Scene.BSM_Templates_collection
-    del bpy.types.Scene.BSM_isSave
-    del bpy.types.Scene.BSM_activeObject
-

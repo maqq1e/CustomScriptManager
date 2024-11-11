@@ -917,6 +917,7 @@ PROPERTY_var_types_options = [
 class EXTENSIONS(Enum):
     extensions_add_item = "extensions.add_item"
     extensions_remove_item = "extensions.remove_item"
+    extensions_refresh_item = "extensions.refresh_item"
 
 class TEMPLATES(Enum):
     templates_add_item = "templates.add_item"
@@ -937,4 +938,5 @@ class OPERATORS(Enum):
     save_templates = "operators.save_templates"
     run_scripts = "operators.run_scripts"
     register_script = "operators.register_script"
+    unregister_script = "operators.unregister_script"
     edit_template_file = "operators.edit_template_file"

@@ -2,24 +2,27 @@ import bpy
 
 from .Interfaces import *
 from ..Defers.Control import *
-from ..Defers.Layouts import getPreferences
 
 from .Datas import OPERATORS
 
 # Operator to open the add-on preferences
 class OPERATOR_OpenAddonPreferencesOperator(bpy.types.Operator):
+    """Open addon properties tab"""
     bl_idname = OPERATORS.open_addon_prefs.value
     bl_label = "Open Addon Preferences"
+    
+    addon_name: bpy.props.StringProperty(default="")
     
     def execute(self, context):
         # Open the Add-ons preferences tab
         bpy.ops.screen.userpref_show('INVOKE_DEFAULT')
         bpy.context.preferences.active_section = 'ADDONS'
-        bpy.data.window_managers['WinMan'].addon_search = "Blender Script Manager"
-        bpy.ops.preferences.addon_expand(module = "bl_ext.user_default.custom_script_manager")
+        bpy.data.window_managers['WinMan'].addon_search = "Custom Script Manager"
+        bpy.ops.preferences.addon_expand(module = self.addon_name)
         return {'FINISHED'}
 
 class OPERATOR_CreateJsonFile(bpy.types.Operator):
+    """Create .json file with templates data"""
     bl_idname = OPERATORS.create_json_file.value
     bl_label = "Create new .json template file?"
     
@@ -46,6 +49,7 @@ class OPERATOR_CreateJsonFile(bpy.types.Operator):
         return context.window_manager.invoke_confirm(self, event)
 
 class OPERATOR_DeleteJsonFile(bpy.types.Operator):
+    """Delete .json file with templates data"""
     bl_idname = OPERATORS.delete_json_file.value
     bl_label = "Delete current .json template file?"
     
@@ -56,6 +60,9 @@ class OPERATOR_DeleteJsonFile(bpy.types.Operator):
         
         EXT_deleteFile(self.path, self.name)
         
+        if len(context.scene.CSM_TemplatesFilesCollection) > 0:
+            context.scene.CSM_TemplateFileName = context.scene.CSM_TemplatesFilesCollection[0].name
+        
         return {'FINISHED'}
 
     
@@ -64,12 +71,13 @@ class OPERATOR_DeleteJsonFile(bpy.types.Operator):
         return context.window_manager.invoke_confirm(self, event)
 
 class OPERATOR_LoadTemplates(bpy.types.Operator):
+    """Load template data from .json file"""
     bl_idname = OPERATORS.load_templates.value
     bl_label = "Load Template"
     
     def execute(self, context):
         
-        EXT_loadDatas(self, context)        
+        EXT_updateAllProperties(self, context)        
 
         return {'FINISHED'}
     
@@ -78,25 +86,26 @@ class OPERATOR_LoadTemplates(bpy.types.Operator):
         return context.window_manager.invoke_confirm(self, event)
 
 class OPERATOR_SaveTemplates(bpy.types.Operator):
+    """Save template data in .json file"""
     bl_idname = OPERATORS.save_templates.value
     bl_label = "Save Template"
     
     def execute(self, context):
         # Get the file name from the addon preferences
-        preferences = getPreferences()
+        PREFERENCES = context.scene.CSM_Preferences
         
-        templates = context.scene.BSM_Templates_collection
-        extensions = context.scene.BSM_Extensions_collection
+        templates = context.scene.CSM_Database
         
-        file = context.scene.BSM_TemplatesFilesList
+        file = context.scene.CSM_TemplateFileName
 
-        EXT_jsonExport(preferences.script_dir, file, EXT_serializeDict(templates, extensions))
+        EXT_jsonExport(PREFERENCES.script_dir, file, EXT_serializeDict(templates))
 
-        context.scene.BSM_isSave = False
+        context.scene.CSM_isSave = False
 
         return {'FINISHED'}
 
 class OPERATOR_RunScriptsOperator(bpy.types.Operator):
+    """Execute custom script .py file"""
     bl_idname = OPERATORS.run_scripts.value
     bl_label = "Run Scripts in Directory"
 
@@ -113,27 +122,8 @@ class OPERATOR_RunScriptsOperator(bpy.types.Operator):
         self.report(status[0], status[1])
         return {'FINISHED'}
 
-class OPERATOR_RegisterScriptOperator(bpy.types.Operator):
-    bl_idname = OPERATORS.register_script.value
-    bl_label = "Register Script from Directory"
-
-    script_dir: bpy.props.StringProperty(name="Script Dir", default="")
-    script_name: bpy.props.StringProperty(name="Script Name", default="")
-    
-    template_name: bpy.props.StringProperty()
-    
-    isUnregister: bpy.props.BoolProperty(default=False)
-    
-    def execute(self, context):
-
-        EXT_registerClass(self.script_dir, self.script_name, self.isUnregister)
-        CMP_changeExtensionStatus(context, self.template_name, self.script_name)
-        
-        context.scene.BSM_isSave = True
-        
-        return {'FINISHED'}
-
 class OPERATOR_EditTemplateFileOperator(bpy.types.Operator):
+    """Edit .json file with template data"""
     bl_idname = OPERATORS.edit_template_file.value
     bl_label = "Edit Template File"
     
@@ -146,6 +136,8 @@ class OPERATOR_EditTemplateFileOperator(bpy.types.Operator):
     def execute(self, context):
         
         EXT_renameFile(self.path, self.template_file_name, self.new_name, ".json")
+        
+        context.scene.CSM_TemplatesFilesCollection[self.template_file_name].name = self.new_name
 
         return {'FINISHED'}
     
@@ -161,7 +153,7 @@ class OPERATOR_EditTemplateFileOperator(bpy.types.Operator):
         box.prop(self, "new_name", text="New name")        
     
     def invoke(self, context, event):
-
+        self.new_name = ""
         return context.window_manager.invoke_props_dialog(self)
 
 OPERATORS_Classes = [
@@ -169,7 +161,6 @@ OPERATORS_Classes = [
     OPERATOR_LoadTemplates,
     OPERATOR_SaveTemplates,
     OPERATOR_RunScriptsOperator,
-    OPERATOR_RegisterScriptOperator,
     OPERATOR_CreateJsonFile,
     OPERATOR_DeleteJsonFile,
     OPERATOR_EditTemplateFileOperator
