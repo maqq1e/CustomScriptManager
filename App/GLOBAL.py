@@ -24,9 +24,9 @@ def _getTemplateItems(self, context):
         
     return Enum_items  
 
-def setProperties():
+def setProperties(addon_name):
     # Preferences
-    bpy.types.Scene.CSM_Preferences = bpy.context.preferences.addons["CustomScriptManager"].preferences
+    bpy.types.Scene.CSM_Preferences = bpy.context.preferences.addons[addon_name].preferences
     
     # Main
     bpy.types.Scene.CSM_TemplateFileName = bpy.props.EnumProperty(name="Templates Files", items=_getTemplatesFiles, update=EXT_updateDatabaseProperties)

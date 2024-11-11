@@ -72,7 +72,7 @@ UsesClasses.extend(MAIN_Classes)
 
 # Initialization Properties
 def Props():
-    setProperties()
+    setProperties(__name__)
 def delProps():
     delProperties()
 
