@@ -15,8 +15,8 @@ from .Defers.Control import EXT_updateAllProperties, EXT_updateTemplatePropertie
 # Set information about addon
 # Addon Info
 bl_info = {
-    "name": "Custom Script Manager",
-    "author": "https://github.com/maqq1e/BlenderScriptManager",
+    "name": "CustomScriptManager",
+    "author": "https://github.com/maqq1e/CustomScriptManager",
     "description": "Easy way manage your custom scripts",
     "blender": (4, 2, 0),
     "version": (1, 2, 0),
