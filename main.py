@@ -182,7 +182,7 @@ class ScriptsPanel(BlenderScriptManager, bpy.types.Panel):
                         for arg in script.args:
                             arg_index = script.args.find(arg.name)
                             
-                            box.separator(factor=0.3, type="LINE")
+                            box.separator(factor=0.3)
                                 
                             args_row = box.row()
                                                                             
