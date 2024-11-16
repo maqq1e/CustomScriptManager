@@ -11,6 +11,7 @@ class INTERFACE_ExtensionsClasses(bpy.types.PropertyGroup):
 class INTERFACE_ExtensionsStack(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty()
     classes: bpy.props.CollectionProperty(type=INTERFACE_ExtensionsClasses)
+    properties: bpy.props.StringProperty()
 
 class INTERFACE_Args(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty()

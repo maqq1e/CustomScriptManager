@@ -17,7 +17,7 @@ class OPERATOR_OpenAddonPreferencesOperator(bpy.types.Operator):
         # Open the Add-ons preferences tab
         bpy.ops.screen.userpref_show('INVOKE_DEFAULT')
         bpy.context.preferences.active_section = 'ADDONS'
-        bpy.data.window_managers['WinMan'].addon_search = "Custom Script Manager"
+        bpy.data.window_managers['WinMan'].addon_search = context.scene.CSM_Preferences.addon_name
         bpy.ops.preferences.addon_expand(module = self.addon_name)
         return {'FINISHED'}
 
