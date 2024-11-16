@@ -20,6 +20,7 @@ bl_info = {
     "description": "Easy way manage your custom scripts",
     "blender": (3, 6, 0),
     "version": (1, 2, 0),
+    "version": (1, 2, 3),
 }
 
 # Preferences Panel
