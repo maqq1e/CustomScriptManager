@@ -144,6 +144,11 @@ def EXT_updateTemplateProperties(self, context):
                 
                 classes = extension.classes.add()            
                 classes.name = cls_name
+                
+            properties = EXT_loadProperties(script_dir, ext.name)
+            if properties:
+                extension.properties = properties
+            
 
 def EXT_loadTemplatesFilesList(context, script_dir):
     for filename in os.listdir(script_dir):
@@ -258,12 +263,17 @@ def EXT_checkFileExist(path, file_name, format = ".json"):
     
     return os.path.isfile(file)
 
-### Scrirt Execution
-def EXT_executeScript(props, filepath):
+def EXT_loadScript(filepath):
     # Dynamically import and execute the script
     spec = importlib.util.spec_from_file_location("module.name", filepath)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
+    return module
+
+### Scrirt Execution
+def EXT_executeScript(props, filepath):
+    
+    module = EXT_loadScript(filepath)
 
     # Init Props value for script
     args = {}
@@ -332,7 +342,28 @@ def EXT_loadClasses(filepath, fileName):
                 classes.append(obj)
                 
     return classes
+
+def EXT_loadProperties(filepath, fileName):
+    # Load the external script
     
+    external_module = EXT_loadScript(filepath + fileName)
+    
+    # Execute the register() method
+    if hasattr(external_module, "register"):
+        external_module.register()
+        print("register() executed.")
+    else:
+        print("No register() method found in the external script.")
+    
+    # Store the unregister method as a string in a Blender property
+    if hasattr(external_module, "unregister"):
+        unregister_string = inspect.getsource(external_module.unregister)
+        unregister_string = unregister_string[unregister_string.find("\n") + 1:]
+        unregister_string = unregister_string.replace("    ", "")
+        return unregister_string
+    else:
+        print("No unregister() method found in the external script.")
+
 def EXT_registerClass(ext_cls):
     try:
         bpy.utils.register_class(ext_cls)
@@ -374,6 +405,10 @@ def CMP_unregisterCurrentExtension(context, current_extension):
     
     for _cls in extension.classes:
         EXT_unregisterClass(_cls.name)
+    try:
+        exec(extension.properties)
+    except Exception as e:
+        print(f"Error reconstructing method from string: {e}")
         
     context.scene.CSM_Stack.remove(index)    
      

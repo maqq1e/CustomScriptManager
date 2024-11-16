@@ -101,6 +101,10 @@ class ExtensionPanel(BlenderScriptManager, bpy.types.Panel):
     bl_idname = "CSM_PT_Extensions"
     bl_label = "Extensions"
     bl_options = {'DEFAULT_CLOSED'}
+    
+    def draw_header(self, context):
+        """Optional: Draw the header of the panel."""
+        self.layout.label(icon='RNA_ADD')  # Example header icon
         
     @classmethod
     def poll(cls, context):
@@ -143,6 +147,10 @@ class ScriptsPanel(BlenderScriptManager, bpy.types.Panel):
     bl_parent_id = "CSM_PT_Templates"
     bl_idname = "CSM_PT_Scripts"
     bl_label = "Scripts"
+    
+    def draw_header(self, context):
+        """Optional: Draw the header of the panel."""
+        self.layout.label(icon='FILE_SCRIPT')  # Example header icon
         
     @classmethod
     def poll(cls, context):
@@ -285,6 +293,10 @@ class Settings(BlenderScriptManager, bpy.types.Panel):
     @classmethod
     def poll(cls, context):
         return EXCEPTION_isReady(context)
+    
+    def draw_header(self, context):
+        """Optional: Draw the header of the panel."""
+        self.layout.label(icon='SETTINGS')  # Example header icon
 
     def draw(self, context):
         PREFERENCES = context.scene.CSM_Preferences
