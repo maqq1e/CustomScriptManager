@@ -1,7 +1,7 @@
 schema_version = "1.0.0"
 
 id = "custom_script_manager"
-version = "1.2.3"
+version = "1.2.4"
 name = "Custom Script Manager"
 tagline = "This is another extension"
 maintainer = "maqq1e - github.com/maqq1e"
@@ -9,6 +9,8 @@ type = "add-on"
 
 # # Optional: link to documentation, support, source files, etc
 # website = "https://github.com/maqq1e/CustomScriptManager"
+
+tags = ["Pipeline", "System", "Development"]
 
 blender_version_min = "4.2.0"
 
