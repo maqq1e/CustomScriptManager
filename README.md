@@ -3,7 +3,7 @@
 
 # Installation
 
-# [Github Releases](https://github.com/maqq1e/CustomScriptManager/releases) & [Gumroad](https://maqq1e.gumroad.com/l/customscriptmanager) & [Blender Extensions](https://extensions.blender.org/approval-queue/blender-script-manager/)
+# [Github Releases](https://github.com/maqq1e/CustomScriptManager/releases) & [Gumroad](https://maqq1e.gumroad.com/l/customscriptmanager)
 
 # Features
 - Can be use separate templates for each workspace
