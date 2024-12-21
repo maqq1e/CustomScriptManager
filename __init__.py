@@ -17,7 +17,7 @@ bl_info = {
     "author": "https://github.com/maqq1e/CustomScriptManager",
     "description": "Easy way manage your custom scripts",
     "blender": (4, 2, 0),
-    "version": (1, 3, 5),
+    "version": (1, 3, 6),
 }
 
 # Preferences Panel
@@ -91,6 +91,8 @@ class Properties(bpy.types.PropertyGroup):
     templatesFilesCollection: bpy.props.CollectionProperty(type=INTERFACE_Files)
     # # Templates
     database: bpy.props.CollectionProperty(type=INTERFACE_Database)
+    scripts_tab: bpy.props.BoolProperty(default=True)
+    extensions_tab: bpy.props.BoolProperty(default=True)
     isSave: bpy.props.BoolProperty(default=False)
     activeObject: bpy.props.PointerProperty(type=bpy.types.Object)
     # Stack

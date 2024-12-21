@@ -108,8 +108,11 @@ class ExtensionPanel(BlenderScriptManager, bpy.types.Panel):
         
     @classmethod
     def poll(cls, context):
-        if len(context.scene.CSM.database) > 0 and EXCEPTION_isReady(context):
-            return True
+        if context.scene.CSM.extensions_tab:
+            if len(context.scene.CSM.database) > 0 and EXCEPTION_isReady(context):
+                return True
+            else:
+                return False
         else:
             return False
         
@@ -154,8 +157,10 @@ class ScriptsPanel(BlenderScriptManager, bpy.types.Panel):
         
     @classmethod
     def poll(cls, context):
-        return False
-        return EXCEPTION_isReady(context)
+        if context.scene.CSM.scripts_tab:
+            return EXCEPTION_isReady(context)
+        else:
+            return False
 
     def draw(self, context):
         
@@ -327,6 +332,8 @@ class Settings(BlenderScriptManager, bpy.types.Panel):
         
         layout.prop(PREFERENCES, "script_dir", text="")
         layout.operator(OPERATORS.open_addon_prefs.value, text="Open Addon Preferences", icon='PREFERENCES')
+        layout.prop(context.scene.CSM, "scripts_tab", text="Use Scripts Tab", toggle=True)
+        layout.prop(context.scene.CSM, "extensions_tab", text="Use Extensions Tab", toggle=True)
 
 MAIN_Classes = [
     TemplatesPanel,
