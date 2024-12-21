@@ -14,7 +14,7 @@ class TEMPLATE_AddTemplateOperator(bpy.types.Operator):
 
         CMP_addTemplate(context)
 
-        context.scene.CSM_isSave = True
+        context.scene.CSM.isSave = True
 
         return {'FINISHED'}
 
@@ -29,7 +29,7 @@ class TEMPLATE_RemoveTemplateOperator(bpy.types.Operator):
         
         CMP_removeTemplate(context, self.index)
 
-        context.scene.CSM_isSave = True
+        context.scene.CSM.isSave = True
 
         return {'FINISHED'}
     
@@ -52,7 +52,7 @@ class TEMPLATE_EditTemplateOperator(bpy.types.Operator):
         
         CMP_editTemplate(context, self.template_index, self.name)
         
-        context.scene.CSM_isSave = True
+        context.scene.CSM.isSave = True
 
         return {'FINISHED'}
     
@@ -90,7 +90,7 @@ class TEMPLATE_AddScriptOperator(bpy.types.Operator):
         
         CMP_addScript(context, self.template_index, self.name, self.description, self.icon, self.path)
 
-        context.scene.CSM_isSave = True
+        context.scene.CSM.isSave = True
 
         return {'FINISHED'}
     
@@ -110,7 +110,7 @@ class TEMPLATE_RemoveScriptOperator(bpy.types.Operator):
         
         CMP_removeScript(context, self.template_index, self.script_index)
         
-        context.scene.CSM_isSave = True
+        context.scene.CSM.isSave = True
 
         return {'FINISHED'}
     
@@ -138,7 +138,7 @@ class TEMPLATE_EditScriptOperator(bpy.types.Operator):
         
         CMP_editScript(context, self.template_index, self.script_index, self.name, self.description, self.icon, self.path)
         
-        context.scene.CSM_isSave = True
+        context.scene.CSM.isSave = True
 
         return {'FINISHED'}
     
@@ -164,13 +164,13 @@ class TEMPLATE_AddArgsOperator(bpy.types.Operator):
 
     def execute(self, context):
         if self.type == "CUSTOM":
-            self.value = bpy.context.scene.BSM_activeObject.name
+            self.value = bpy.context.scene.CSM.activeObject.name
         if self.type == "CUSTOM_SELF":
             self.value = ""
         
         CMP_addArgs(context, self.template_index, self.script_index, self.type, self.name, self.description, self.value)
 
-        context.scene.CSM_isSave = True
+        context.scene.CSM.isSave = True
 
         return {'FINISHED'}
     
@@ -187,7 +187,7 @@ class TEMPLATE_AddArgsOperator(bpy.types.Operator):
         box.prop(self, "type", text="Type")
         
         if self.type == "CUSTOM":
-            box.prop(context.scene, "BSM_activeObject", text="Object")
+            box.prop(context.scene.CSM, "activeObject", text="Object")
             
     
     def invoke(self, context, event):
@@ -213,13 +213,13 @@ class TEMPLATE_EditArgsOperator(bpy.types.Operator):
     
     def execute(self, context):
         if self.type == "CUSTOM":
-            self.value[0].custom = bpy.context.scene.BSM_activeObject.name
+            self.value[0].custom = bpy.context.scene.CSM.activeObject.name
         if self.type == "CUSTOM_SELF":
             self.value[0].custom = ""
         
         CMP_editArgs(context, self.template_index, self.script_index, self.arg_index, self.type, self.name, self.description, self.value[0])
         
-        context.scene.CSM_isSave = True
+        context.scene.CSM.isSave = True
 
         return {'FINISHED'}
     
@@ -238,7 +238,7 @@ class TEMPLATE_EditArgsOperator(bpy.types.Operator):
         disbox.enabled = False
         
         if self.type == "CUSTOM":
-            box.prop(context.scene, "BSM_activeObject", text="Object")
+            box.prop(context.scene.CSM, "activeObject", text="Object")
     
     def invoke(self, context, event):
 
@@ -257,7 +257,7 @@ class TEMPLATE_RemoveArgsOperator(bpy.types.Operator):
         
         CMP_removeArgs(context, self.template_index, self.script_index, self.arg_index)
         
-        context.scene.CSM_isSave = True
+        context.scene.CSM.isSave = True
 
         return {'FINISHED'}
     

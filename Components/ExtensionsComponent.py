@@ -17,7 +17,7 @@ class EXTENSION_AddExtensionsOperator(bpy.types.Operator):
         CMP_addExtension(context, self.template_index, self.name)        
         EXT_updateTemplateProperties(self, context)
         
-        context.scene.CSM_isSave = True
+        context.scene.CSM.isSave = True
 
         return {'FINISHED'}
     
@@ -35,14 +35,14 @@ class EXTENSION_RemoveExtensionsOperator(bpy.types.Operator):
 
     def execute(self, context):
         
-        template = context.scene.CSM_Database[self.template_index]
+        template = context.scene.CSM.database[self.template_index]
         ext = template.extensions[self.extension_index]
         
         CMP_unregisterCurrentExtension(context, ext.name)
 
         CMP_removeExtension(context, self.template_index, self.extension_index)
 
-        context.scene.CSM_isSave = True
+        context.scene.CSM.isSave = True
 
         return {'FINISHED'}
     

@@ -1,7 +1,7 @@
 import bpy
 
 def makeTemplateSave(self, context):
-    context.scene.CSM_isSave = True
+    context.scene.CSM.isSave = True
 
 ### Classes
 
@@ -10,8 +10,9 @@ class INTERFACE_ExtensionsClasses(bpy.types.PropertyGroup):
 
 class INTERFACE_ExtensionsStack(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty()
-    classes: bpy.props.CollectionProperty(type=INTERFACE_ExtensionsClasses)
-    properties: bpy.props.StringProperty()
+    
+    script = {}
+        
 
 class INTERFACE_Args(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty()
