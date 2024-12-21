@@ -82,7 +82,7 @@ class TEMPLATE_AddScriptOperator(bpy.types.Operator):
 
     description: bpy.props.StringProperty(name="Description")
 
-    icon: bpy.props.EnumProperty(name="Icons", items=icons)
+    icon: bpy.props.EnumProperty(name="Icons", items=getIcons)
 
     path: bpy.props.EnumProperty(name="Scripts", items=getListOfScripts)
 
@@ -93,6 +93,16 @@ class TEMPLATE_AddScriptOperator(bpy.types.Operator):
         context.scene.CSM.isSave = True
 
         return {'FINISHED'}
+    
+    def draw(self, context):
+        
+        layout = self.layout
+        box = layout.box()
+        
+        box.prop(self, "name", text="Button Name")
+        box.prop(self, "description", text="Description")
+        box.prop(self, "icon", text="Icon")
+        box.prop(self, "path", text="Script")
     
     def invoke(self, context, event):
 
@@ -130,7 +140,7 @@ class TEMPLATE_EditScriptOperator(bpy.types.Operator):
 
     description: bpy.props.StringProperty(name="Description")
 
-    icon: bpy.props.EnumProperty(name="Icons", items=icons)
+    icon: bpy.props.EnumProperty(name="Icons", items=getIcons)
 
     path: bpy.props.EnumProperty(name="Scripts", items=getListOfScripts)
     
