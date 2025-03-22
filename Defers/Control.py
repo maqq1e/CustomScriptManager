@@ -115,7 +115,11 @@ def EXT_updateTemplateProperties(self, context):
     
     ### Unregister all extensions
     for ext in stack:
-        CMP_unregisterCurrentExtension(context, ext.name)
+        result = CMP_unregisterCurrentExtension(context, ext.name)
+        try:
+            self.report(result[0], result[1])
+        except Exception as e:
+            continue
     
     stack.clear()
     
@@ -140,11 +144,40 @@ def EXT_updateTemplateProperties(self, context):
                 extension = context.scene.CSM.stack.add()
                 
                 extension.name = ext.name
-                
-                script_context['register']()
+                try:
+                    script_context['register']()
+                except Exception as e:
+                    self.report({'ERROR'}, f"Error running register in {ext.name}: {e}")
                 
                 extension.script['unregister'] = script_context['unregister']
+
+def EXT_updateGlobalExtensions(self, context):
+    
+    
+    PREFERENCES = context.scene.CSM.preferences
+    script_dir = PREFERENCES.script_dir
+    
+    ### Register all extensions
+    if len(PREFERENCES.globalExtensionsStack) > 0:    
+        
+        for ext in PREFERENCES.globalExtensionsStack:
+            script = EXT_loadScriptAsSctring(script_dir, ext.name) # Load script
             
+            
+            script_context = {}
+            
+            exec(script, script_context)
+            
+            if script_context.get("register") == None or script_context.get("unregister") == None:
+                self.report({'ERROR'}, 'You have no register and unregister functions inside ' + ext.name)
+                return None
+            else:
+                try:
+                    script_context['register']()
+                except Exception as e:
+                    self.report({'ERROR'}, f"Error running register in {ext.name}: {e}")
+                
+                ext.script['unregister'] = script_context['unregister']    
             
 def EXT_loadTemplatesFilesList(context, script_dir):
     for filename in os.listdir(script_dir):
@@ -378,19 +411,46 @@ def CMP_addExtension(context, template_index, name):
     
     extension.name = name
     
+def CMP_addGloablExtension(context, name):
+    extension = context.scene.CSM.preferences.globalExtensionsStack.add()
+    
+    extension.name = name
+    
 def CMP_removeExtension(context, template_index, extension_index):
     if len(context.scene.CSM.database[template_index].extensions) > 0:
         context.scene.CSM.database[template_index].extensions.remove(extension_index)
 
 def CMP_unregisterCurrentExtension(context, current_extension):
     
-    index = context.scene.CSM.stack.find(current_extension)
-    
-    extension = context.scene.CSM.stack[index]
-    
-    extension.script['unregister']()
+    try:
+        index = context.scene.CSM.stack.find(current_extension)
         
+        extension = context.scene.CSM.stack[index]
+    
+        extension.script['unregister']()
+    except Exception as e:
+        context.scene.CSM.stack.remove(index) 
+        return [{'ERROR'}, f"Error while unregister in {current_extension}: {e}"]
+    
     context.scene.CSM.stack.remove(index)    
+    return [{'INFO'}, f"Success unregister " + current_extension + " extension."]
+
+
+def CMP_unregisterGlobalExtension(context, index):
+    PREFERENCES = context.scene.CSM.preferences
+    
+    extension = PREFERENCES.globalExtensionsStack[index]
+    
+    try:
+    
+        extension.script['unregister']()
+    except Exception as e:
+        PREFERENCES.globalExtensionsStack.remove(index) 
+        return [{'ERROR'}, f"Error while unregister in {extension.name}: {e}"]
+    
+    PREFERENCES.globalExtensionsStack.remove(index)    
+    return [{'INFO'}, f"Success unregister " + extension.name + " extension."]
+
      
 ### Templates Control
 def CMP_addTemplate(context, new_name = "New Template"):

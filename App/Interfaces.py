@@ -12,6 +12,11 @@ class INTERFACE_ExtensionsStack(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty()
     
     script = {}
+
+class INTERFACE_GlobalExtensionStack(bpy.types.PropertyGroup):
+    name: bpy.props.StringProperty()
+    
+    script = {}
         
 
 class INTERFACE_Args(bpy.types.PropertyGroup):
@@ -60,6 +65,7 @@ INTERFACES_Classes = [
     INTERFACE_Args,
     INTERFACE_ExtensionsClasses,
     INTERFACE_ExtensionsStack,
+    INTERFACE_GlobalExtensionStack,
     INTERFACE_Scripts,
     INTERFACE_Extensions,
     INTERFACE_Database,    

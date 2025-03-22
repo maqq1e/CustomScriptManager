@@ -16,8 +16,8 @@ bl_info = {
     "name": "CustomScriptManager",
     "author": "https://github.com/maqq1e/CustomScriptManager",
     "description": "Easy way manage your custom scripts",
-    "blender": (4, 2, 0),
-    "version": (1, 3, 6),
+    "blender": (4, 4, 0),
+    "version": (1, 4, 0),
 }
 
 # Preferences Panel
@@ -32,6 +32,8 @@ class SETTING_ManagerPreferences(bpy.types.AddonPreferences):
         subtype='DIR_PATH',
         update=EXT_updateAllProperties
     ) # type: ignore
+    
+    globalExtensionsStack: bpy.props.CollectionProperty(type=INTERFACE_GlobalExtensionStack)
     
     addon_name: bpy.props.StringProperty(default=__name__)
     
@@ -115,8 +117,8 @@ def delProperties():
 # Initialization Classes
 UsesClasses = []
 
-UsesClasses.append(SETTING_ManagerPreferences)
 UsesClasses.extend(INTERFACES_Classes)
+UsesClasses.append(SETTING_ManagerPreferences)
 UsesClasses.extend(OPERATORS_Classes)
 UsesClasses.extend(EXTENSIONS_Classes)
 UsesClasses.extend(TEMPLATES_Classes)

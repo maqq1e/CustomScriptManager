@@ -8,7 +8,7 @@ from .Datas import OPERATORS
 # Operator to open the add-on preferences
 class OPERATOR_OpenAddonPreferencesOperator(bpy.types.Operator):
     """Open addon properties tab"""
-    bl_idname = OPERATORS.open_addon_prefs.value
+    bl_idname = "operators.open_addon_prefs"
     bl_label = "Open Addon Preferences"
     
     addon_name: bpy.props.StringProperty(default="")
