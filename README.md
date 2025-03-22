@@ -10,6 +10,7 @@
 - List all available .py scripts in chosen folder
 - Support custom parameters for custom scripts
 - Can automatically load simple addon extension for each template separately
+- You can load custom script for global scope without link to template
 
 # Usage
 
