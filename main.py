@@ -9,52 +9,117 @@ from .App.Interfaces import *
 from .App.Datas import TEMPLATES, EXTENSIONS
 
 def EXCEPTION_isReady(context):
-    PREFERENCES = context.scene.CSM_Preferences
+    PREFERENCES = context.scene.CSM.preferences
     data = PREFERENCES.script_dir
     if data == "":
         return False
     else:
-        if len(context.scene.CSM_TemplatesFilesCollection) > 0:
+        if len(context.scene.CSM.templatesFilesCollection) > 0:
             return True
         else:
             return False
 
-class BlenderScriptManager:
+class CustomScriptManager:
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "Script Manager"
-
-class TemplatesPanel(BlenderScriptManager, bpy.types.Panel):
+    
+class SetupPanel(CustomScriptManager, bpy.types.Panel):
     bl_label = "Custom Script Manager"
-    bl_idname = "CSM_PT_Templates"
+    bl_idname = "CSM_PT_Setup"
     bl_order = 0
-
+    
+    @classmethod
+    def poll(cls, context):
+        PREFERENCES = context.scene.CSM
+        if PREFERENCES.preferences.script_dir == "" or len(PREFERENCES.templatesFilesCollection) == 0:
+            return True
+        else:
+            return False
+    
     def draw(self, context):
+        
         layout = self.layout
         
-        PREFERENCES = context.scene.CSM_Preferences
-        
-        ### --- GET PREFERENCES --- ###
-        ###############################
+        PREFERENCES = context.scene.CSM.preferences
         
         if PREFERENCES.script_dir == "":
             layout.label(text="Please set the script directory.")
-            
             layout.prop(PREFERENCES, "script_dir", text="")
-            
-            layout.operator(OPERATORS.load_templates.value, text="Load Templates", icon="IMPORT")
-            op = layout.operator(OPERATORS.open_addon_prefs.value, text="Open Addon Preferences", icon='PREFERENCES')
+            # layout.operator(OPERATORS.load_templates.value, text="Load Templates", icon="IMPORT")
+            op = layout.operator("operators.open_addon_prefs", text="Open Addon Preferences", icon='PREFERENCES')
             op.addon_name = PREFERENCES.addon_name
             return None
         
-        if len(context.scene.CSM_TemplatesFilesCollection) == 0:
-            LAYOUT_multiline(context, "Your script folder not contain any .json template file. You must create one.", layout)
-            op = layout.operator(OPERATORS.create_json_file.value, text="Create .json file", icon='ADD') ## LOOK OUT
+        if len(context.scene.CSM.templatesFilesCollection) == 0:
+            LAYOUT_multiline(context, "Your script folder not contain any config template file. You must create one.", layout)
+            op = layout.operator("operators.create_config_file", text="Create config file", icon='ADD') ## LOOK OUT
             op.path = PREFERENCES.script_dir
             op.name = "templates"
-            layout.operator(OPERATORS.load_templates.value, text="Load Templates", icon="IMPORT")
-            layout.operator(OPERATORS.open_addon_prefs.value, text="Open Addon Preferences", icon='PREFERENCES')
+            # layout.operator(OPERATORS.load_templates.value, text="Load Templates", icon="IMPORT")
+            layout.operator("operators.open_addon_prefs", text="Open Addon Preferences", icon='PREFERENCES')
             return None
+
+class GlobalExtensionsPanel(CustomScriptManager, bpy.types.Panel):
+    bl_label = "Global Extensions"
+    bl_idname = "CSM_PT_GlobalExtensions"
+    bl_order = 0
+    
+    def draw_header(self, context):
+        """Optional: Draw the header of the panel."""
+        self.layout.label(icon='WORLD_DATA')  # Example header icon
+
+    @classmethod
+    def poll(cls, context):
+        PREFERENCES = context.scene.CSM
+        if PREFERENCES.preferences.script_dir == "" or len(PREFERENCES.templatesFilesCollection) == 0:
+            return False
+        else:
+            return True
+
+    def draw(self, context):
+        layout = self.layout
+        PREFERENCES = context.scene.CSM.preferences
+        
+        ### Iterate Extensions List
+        if len(PREFERENCES.globalExtensionsStack) != 0:
+            op = layout.operator("globalextensions.refresh_item", text="Forced Refresh Extensions", icon="FILE_REFRESH")
+            
+            ext_index = 0
+            for ext in PREFERENCES.globalExtensionsStack:
+                box = layout.box()
+                row = box.row()
+                
+                row.label(text=ext.name)
+                
+                del_op = row.operator("globalextensions.remove_item", text="", icon="REMOVE")
+                del_op.extension_index = ext_index
+                
+                ext_index = ext_index + 1
+        else:
+            layout.label(text="You have no any extensions.")
+            
+        op = layout.operator("globalextensions.add_item", text="Add Extension")
+
+class TemplatesPanel(CustomScriptManager, bpy.types.Panel):
+    bl_label = "Templates Scripts"
+    bl_idname = "CSM_PT_Templates"
+    bl_order = 0
+    
+    def draw_header(self, context):
+        """Optional: Draw the header of the panel."""
+        self.layout.label(icon='LINENUMBERS_ON')  # Example header icon
+
+    @classmethod
+    def poll(cls, context):
+        PREFERENCES = context.scene.CSM
+        if PREFERENCES.preferences.script_dir == "" or len(PREFERENCES.templatesFilesCollection) == 0:
+            return False
+        else:
+            return True
+    
+    def draw(self, context):
+        layout = self.layout
         
         ### --- SETUP TEMPLATES --- ###
         ###############################
@@ -63,7 +128,7 @@ class TemplatesPanel(BlenderScriptManager, bpy.types.Panel):
         first_row = layout.row()
         
         # If Templates changed
-        if context.scene.CSM_isSave:
+        if context.scene.CSM.isSave:
             first_row.enabled = True
         else:
             first_row.enabled = False
@@ -73,7 +138,7 @@ class TemplatesPanel(BlenderScriptManager, bpy.types.Panel):
         first_row.operator(OPERATORS.save_templates.value, text="Save Templates", icon="EXPORT")
         
         ### If there is not any of templates
-        if len(context.scene.CSM_Database) == 0:
+        if len(context.scene.CSM.database) == 0:
             layout.label(text="You need to create your first template")
             layout.operator(TEMPLATES.templates_add_item.value, text="Create template", icon="ADD")
             return None
@@ -92,11 +157,11 @@ class TemplatesPanel(BlenderScriptManager, bpy.types.Panel):
         delete = _delete_row.operator(TEMPLATES.templates_remove_item.value, text="", icon="REMOVE")
         
         
-        template_index = context.scene.CSM_Database.find(context.workspace.CSM_TemplateName) # Get Current Template Index
+        template_index = context.scene.CSM.database.find(context.workspace.CSM_TemplateName) # Get Current Template Index
         delete.index = template_index
         edit.template_index = template_index
 
-class ExtensionPanel(BlenderScriptManager, bpy.types.Panel):
+class ExtensionPanel(CustomScriptManager, bpy.types.Panel):
     bl_parent_id = "CSM_PT_Templates"
     bl_idname = "CSM_PT_Extensions"
     bl_label = "Extensions"
@@ -108,8 +173,11 @@ class ExtensionPanel(BlenderScriptManager, bpy.types.Panel):
         
     @classmethod
     def poll(cls, context):
-        if len(context.scene.CSM_Database) > 0 and EXCEPTION_isReady(context):
-            return True
+        if context.scene.CSM.extensions_tab:
+            if len(context.scene.CSM.database) > 0 and EXCEPTION_isReady(context):
+                return True
+            else:
+                return False
         else:
             return False
         
@@ -118,8 +186,8 @@ class ExtensionPanel(BlenderScriptManager, bpy.types.Panel):
         layout = self.layout
         
         current_template = context.workspace.CSM_TemplateName
-        template_index = context.scene.CSM_Database.find(current_template)
-        extensions_collection = context.scene.CSM_Database[current_template].extensions
+        template_index = context.scene.CSM.database.find(current_template)
+        extensions_collection = context.scene.CSM.database[current_template].extensions
         
         ### Iterate Extensions List
         if len(extensions_collection) != 0:
@@ -143,10 +211,11 @@ class ExtensionPanel(BlenderScriptManager, bpy.types.Panel):
         op = layout.operator(EXTENSIONS.extensions_add_item.value, text="Add Extension")
         op.template_index = template_index
 
-class ScriptsPanel(BlenderScriptManager, bpy.types.Panel):
+class ScriptsPanel(CustomScriptManager, bpy.types.Panel):
     bl_parent_id = "CSM_PT_Templates"
     bl_idname = "CSM_PT_Scripts"
     bl_label = "Scripts"
+    bl_order = 4
     
     def draw_header(self, context):
         """Optional: Draw the header of the panel."""
@@ -154,20 +223,23 @@ class ScriptsPanel(BlenderScriptManager, bpy.types.Panel):
         
     @classmethod
     def poll(cls, context):
-        return EXCEPTION_isReady(context)
+        if context.scene.CSM.scripts_tab:
+            return EXCEPTION_isReady(context)
+        else:
+            return False
 
     def draw(self, context):
         
-        PREFERENCES = context.scene.CSM_Preferences
+        PREFERENCES = context.scene.CSM.preferences
         
-        template_index = context.scene.CSM_Database.find(context.workspace.CSM_TemplateName)
+        template_index = context.scene.CSM.database.find(context.workspace.CSM_TemplateName)
         
         layout = self.layout
         
         ### Iterate Scripts
-        if len(context.scene.CSM_Database) != 0:
+        if len(context.scene.CSM.database) != 0:
             
-            template = context.scene.CSM_Database[template_index]
+            template = context.scene.CSM.database[template_index]
             
             if len(template.scripts) != 0:
                 for script in template.scripts:
@@ -285,7 +357,7 @@ class ScriptsPanel(BlenderScriptManager, bpy.types.Panel):
             
         op = layout.label(text="You need template to add any scripts.")
 
-class Settings(BlenderScriptManager, bpy.types.Panel):
+class Settings(CustomScriptManager, bpy.types.Panel):
     bl_parent_id = "CSM_PT_Templates"
     bl_idname = "CSM_PT_Settings"
     bl_label = "Settings"
@@ -299,18 +371,18 @@ class Settings(BlenderScriptManager, bpy.types.Panel):
         self.layout.label(icon='SETTINGS')  # Example header icon
 
     def draw(self, context):
-        PREFERENCES = context.scene.CSM_Preferences
+        PREFERENCES = context.scene.CSM.preferences
         
         layout = self.layout
         
         box = layout.box()
         
         row = box.row()
-        row.prop(context.scene, "CSM_TemplateFileName", text="")
+        row.prop(context.scene.CSM, "templateFileName", text="")
         
         edit = row.operator(OPERATORS.edit_template_file.value, text="", icon='TOOL_SETTINGS')
         edit.path = PREFERENCES.script_dir
-        edit.template_file_name = context.scene.CSM_TemplateFileName
+        edit.template_file_name = context.scene.CSM.templateFileName
         
         add_new = row.operator(OPERATORS.create_json_file.value, text="", icon='ADD')
         add_new.path = PREFERENCES.script_dir
@@ -318,16 +390,20 @@ class Settings(BlenderScriptManager, bpy.types.Panel):
         
         del_new = row.operator(OPERATORS.delete_json_file.value, text="", icon='REMOVE')
         del_new.path = PREFERENCES.script_dir
-        del_new.name = context.scene.CSM_TemplateFileName
+        del_new.name = context.scene.CSM.templateFileName
         
         # Load manualy if didn't load automaticly
-        if len(context.scene.CSM_TemplatesFilesCollection) == 0:
+        if len(context.scene.CSM.templatesFilesCollection) == 0:
             box.operator(OPERATORS.load_templates.value, text="Load Templates", icon="IMPORT")
         
         layout.prop(PREFERENCES, "script_dir", text="")
-        layout.operator(OPERATORS.open_addon_prefs.value, text="Open Addon Preferences", icon='PREFERENCES')
+        layout.operator("operators.open_addon_prefs", text="Open Addon Preferences", icon='PREFERENCES')
+        layout.prop(context.scene.CSM, "scripts_tab", text="Use Scripts Tab", toggle=True)
+        layout.prop(context.scene.CSM, "extensions_tab", text="Use Extensions Tab", toggle=True)
 
 MAIN_Classes = [
+    SetupPanel,
+    GlobalExtensionsPanel,
     TemplatesPanel,
     Settings,
     ExtensionPanel,
