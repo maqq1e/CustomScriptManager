@@ -8,7 +8,7 @@ from .Datas import OPERATORS
 # Operator to open the add-on preferences
 class OPERATOR_OpenAddonPreferencesOperator(bpy.types.Operator):
     """Open addon properties tab"""
-    bl_idname = OPERATORS.open_addon_prefs.value
+    bl_idname = "operators.open_addon_prefs"
     bl_label = "Open Addon Preferences"
     
     addon_name: bpy.props.StringProperty(default="")
@@ -17,7 +17,7 @@ class OPERATOR_OpenAddonPreferencesOperator(bpy.types.Operator):
         # Open the Add-ons preferences tab
         bpy.ops.screen.userpref_show('INVOKE_DEFAULT')
         bpy.context.preferences.active_section = 'ADDONS'
-        bpy.data.window_managers['WinMan'].addon_search = context.scene.CSM_Preferences.addon_name
+        bpy.data.window_managers['WinMan'].addon_search = context.scene.CSM.preferences.addon_name
         bpy.ops.preferences.addon_expand(module = self.addon_name)
         return {'FINISHED'}
 
@@ -60,8 +60,8 @@ class OPERATOR_DeleteJsonFile(bpy.types.Operator):
         
         EXT_deleteFile(self.path, self.name)
         
-        if len(context.scene.CSM_TemplatesFilesCollection) > 0:
-            context.scene.CSM_TemplateFileName = context.scene.CSM_TemplatesFilesCollection[0].name
+        if len(context.scene.CSM.templatesFilesCollection) > 0:
+            context.scene.CSM.templateFileName = context.scene.CSM.templatesFilesCollection[0].name
         
         return {'FINISHED'}
 
@@ -92,15 +92,15 @@ class OPERATOR_SaveTemplates(bpy.types.Operator):
     
     def execute(self, context):
         # Get the file name from the addon preferences
-        PREFERENCES = context.scene.CSM_Preferences
+        PREFERENCES = context.scene.CSM.preferences
         
-        templates = context.scene.CSM_Database
+        templates = context.scene.CSM.database
         
-        file = context.scene.CSM_TemplateFileName
+        file = context.scene.CSM.templateFileName
 
         EXT_jsonExport(PREFERENCES.script_dir, file, EXT_serializeDict(templates))
 
-        context.scene.CSM_isSave = False
+        context.scene.CSM.isSave = False
 
         return {'FINISHED'}
 
@@ -137,7 +137,7 @@ class OPERATOR_EditTemplateFileOperator(bpy.types.Operator):
         
         EXT_renameFile(self.path, self.template_file_name, self.new_name, ".json")
         
-        context.scene.CSM_TemplatesFilesCollection[self.template_file_name].name = self.new_name
+        context.scene.CSM.templatesFilesCollection[self.template_file_name].name = self.new_name
 
         return {'FINISHED'}
     

@@ -7,7 +7,7 @@ from ..App.Datas import *
 def getListOfScripts(self, context):
     """Get all scripts from preferences script directory folder"""
     
-    PREFERENCES = context.scene.CSM_Preferences
+    PREFERENCES = context.scene.CSM.preferences
 
     directory = PREFERENCES.script_dir
     
@@ -44,30 +44,30 @@ def EXT_getVarType(types, id_type):
 # Init in Preferences Changes
 def EXT_updateAllProperties(self, context):
     
-    PREFERENCES = context.scene.CSM_Preferences
+    PREFERENCES = context.scene.CSM.preferences
     script_dir = PREFERENCES.script_dir
     
     if script_dir == "":
         return None
     
     # Set Json Template Files
-    context.scene.CSM_TemplatesFilesCollection.clear() # Clear list of all .json files
+    context.scene.CSM.templatesFilesCollection.clear() # Clear list of all .json files
     EXT_loadTemplatesFilesList(context, script_dir) # Load .json template files list
-    if len(context.scene.CSM_TemplatesFilesCollection) > 0:
-        context.scene.CSM_TemplateFileName = context.scene.CSM_TemplatesFilesCollection[0].name
+    if len(context.scene.CSM.templatesFilesCollection) > 0:
+        context.scene.CSM.templateFileName = context.scene.CSM.templatesFilesCollection[0].name
 
 # Init in Template File Changes
 def EXT_updateDatabaseProperties(self, context):
     
-    PREFERENCES = context.scene.CSM_Preferences
+    PREFERENCES = context.scene.CSM.preferences
     script_dir = PREFERENCES.script_dir
     
     if script_dir == "":
         return None
     
-    context.scene.CSM_Database.clear() # Clear list of all templates data
+    context.scene.CSM.database.clear() # Clear list of all templates data
     
-    file_name = context.scene.CSM_TemplateFileName
+    file_name = context.scene.CSM.templateFileName
     data_list = EXT_jsonImport(script_dir, file_name)
     templates_list = data_list['templates']
     
@@ -101,55 +101,84 @@ def EXT_updateDatabaseProperties(self, context):
         script_index = 0
         template_index = template_index + 1 # Increment Index
     
-    if len(context.scene.CSM_Database) > 0:
-        context.workspace.CSM_TemplateName = context.scene.CSM_Database[0].name
+    if len(context.scene.CSM.database) > 0:
+        context.workspace.CSM_TemplateName = context.scene.CSM.database[0].name
     
-    context.scene.CSM_isSave = False
+    context.scene.CSM.isSave = False
 
 def EXT_updateTemplateProperties(self, context):
     
-    PREFERENCES = context.scene.CSM_Preferences
+    PREFERENCES = context.scene.CSM.preferences
     script_dir = PREFERENCES.script_dir
     
-    stack = context.scene.CSM_Stack
+    stack = context.scene.CSM.stack
     
     ### Unregister all extensions
     for ext in stack:
-        CMP_unregisterCurrentExtension(context, ext.name)
+        result = CMP_unregisterCurrentExtension(context, ext.name)
+        try:
+            self.report(result[0], result[1])
+        except Exception as e:
+            continue
     
     stack.clear()
     
     ### Register all extensions
-    if len(context.scene.CSM_Database) > 0:
+    if len(context.scene.CSM.database) > 0:
         template_index = context.workspace.CSM_TemplateName
         
-        template_extensions = context.scene.CSM_Database[template_index].extensions
+        template_extensions = context.scene.CSM.database[template_index].extensions
         
         for ext in template_extensions:
-            classes = EXT_loadClasses(script_dir, ext.name) # Load classes from script
+            script = EXT_loadScriptAsSctring(script_dir, ext.name) # Load script
             
-            extension = context.scene.CSM_Stack.add()
             
-            extension.name = ext.name
+            script_context = {}
             
-            for _cls in classes:
-                EXT_registerClass(_cls)
-                
-                cls_name = _cls.bl_idname
-                
-                ### If class is operator class
-                if "." in cls_name:
-                    module, op = cls_name.split(".")
-                    cls_name = module.upper() +"_OT_" + op
-                
-                classes = extension.classes.add()            
-                classes.name = cls_name
-                
-            properties = EXT_loadProperties(script_dir, ext.name)
-            if properties:
-                extension.properties = properties
+            exec(script, script_context)
             
+            if script_context.get("register") == None or script_context.get("unregister") == None:
+                self.report({'ERROR'}, 'You have no register and unregister functions inside ' + ext.name)
+                return None
+            else:
+                extension = context.scene.CSM.stack.add()
+                
+                extension.name = ext.name
+                try:
+                    script_context['register']()
+                except Exception as e:
+                    self.report({'ERROR'}, f"Error running register in {ext.name}: {e}")
+                
+                extension.script['unregister'] = script_context['unregister']
 
+def EXT_updateGlobalExtensions(self, context):
+    
+    
+    PREFERENCES = context.scene.CSM.preferences
+    script_dir = PREFERENCES.script_dir
+    
+    ### Register all extensions
+    if len(PREFERENCES.globalExtensionsStack) > 0:    
+        
+        for ext in PREFERENCES.globalExtensionsStack:
+            script = EXT_loadScriptAsSctring(script_dir, ext.name) # Load script
+            
+            
+            script_context = {}
+            
+            exec(script, script_context)
+            
+            if script_context.get("register") == None or script_context.get("unregister") == None:
+                self.report({'ERROR'}, 'You have no register and unregister functions inside ' + ext.name)
+                return None
+            else:
+                try:
+                    script_context['register']()
+                except Exception as e:
+                    self.report({'ERROR'}, f"Error running register in {ext.name}: {e}")
+                
+                ext.script['unregister'] = script_context['unregister']    
+            
 def EXT_loadTemplatesFilesList(context, script_dir):
     for filename in os.listdir(script_dir):
         # Check if the file ends with .json (Python files)
@@ -244,7 +273,7 @@ def EXT_jsonExport(path, file_name, data, isNew = False):
     if isNew:
         context = bpy.context
         CMP_addTemplatesFiles(context, file_name + ".json") # Add in CSM_TemplatesFilesList
-        context.scene.CSM_TemplateFileName = file_name
+        context.scene.CSM.templateFileName = file_name
         
 def EXT_deleteFile(path, file_name, format = ".json"):
     file = os.path.join(path, file_name + format)
@@ -313,35 +342,24 @@ def EXT_executeScript(props, filepath):
         except Exception as e:
             return [{'ERROR'}, f"Error running main() in {filepath}: {e}"]
 
-def EXT_loadClasses(filepath, fileName):
+def EXT_loadScriptAsSctring(filepath, fileName):
     
     # Full path to the .py file
     py_file_path = os.path.join(filepath, fileName)
     # Ensure the path is in Python's system path
     if filepath not in sys.path:
         sys.path.append(filepath)
-        
-    # Remove the .py extension from the filename to import the module
-    module_name = os.path.splitext(fileName)[0]
     
-    # Try to import the module dynamically
     try:
-        module = importlib.import_module(module_name)
-        importlib.reload(module)  # Reload the module in case it was already loaded
+        # Open the file and read its content
+        with open(py_file_path, 'r', encoding='utf-8') as file:
+            script_content = file.read()
     except ImportError as e:
         print(f"Error importing module: {e}")
-        module = None
+        script_content = None
         
-    # If the module was successfully imported, inspect it to find all classes
-    classes = []
-    if module:
-        # Iterate through the members of the module and filter out classes
-        for name, obj in inspect.getmembers(module):
-            # Check if the object is a class and a subclass of bpy.types.Operator or bpy.types.Panel
-            if inspect.isclass(obj) and (issubclass(obj, bpy.types.Operator) or issubclass(obj, bpy.types.Panel)):
-                classes.append(obj)
-                
-    return classes
+    
+    return script_content
 
 def EXT_loadProperties(filepath, fileName):
     # Load the external script
@@ -388,66 +406,88 @@ def EXT_unregisterClass(ext_cls):
 
 ### Extensions Control
 def CMP_addExtension(context, template_index, name):
-    template = context.scene.CSM_Database[template_index]
+    template = context.scene.CSM.database[template_index]
     extension = template.extensions.add()
     
     extension.name = name
     
+def CMP_addGloablExtension(context, name):
+    extension = context.scene.CSM.preferences.globalExtensionsStack.add()
+    
+    extension.name = name
+    
 def CMP_removeExtension(context, template_index, extension_index):
-    if len(context.scene.CSM_Database[template_index].extensions) > 0:
-        context.scene.CSM_Database[template_index].extensions.remove(extension_index)
+    if len(context.scene.CSM.database[template_index].extensions) > 0:
+        context.scene.CSM.database[template_index].extensions.remove(extension_index)
 
 def CMP_unregisterCurrentExtension(context, current_extension):
     
-    index = context.scene.CSM_Stack.find(current_extension)
-    
-    extension = context.scene.CSM_Stack[index]
-    
-    for _cls in extension.classes:
-        EXT_unregisterClass(_cls.name)
     try:
-        exec(extension.properties)
-    except Exception as e:
-        print(f"Error reconstructing method from string: {e}")
+        index = context.scene.CSM.stack.find(current_extension)
         
-    context.scene.CSM_Stack.remove(index)    
+        extension = context.scene.CSM.stack[index]
+    
+        extension.script['unregister']()
+    except Exception as e:
+        context.scene.CSM.stack.remove(index) 
+        return [{'ERROR'}, f"Error while unregister in {current_extension}: {e}"]
+    
+    context.scene.CSM.stack.remove(index)    
+    return [{'INFO'}, f"Success unregister " + current_extension + " extension."]
+
+
+def CMP_unregisterGlobalExtension(context, index):
+    PREFERENCES = context.scene.CSM.preferences
+    
+    extension = PREFERENCES.globalExtensionsStack[index]
+    
+    try:
+    
+        extension.script['unregister']()
+    except Exception as e:
+        PREFERENCES.globalExtensionsStack.remove(index) 
+        return [{'ERROR'}, f"Error while unregister in {extension.name}: {e}"]
+    
+    PREFERENCES.globalExtensionsStack.remove(index)    
+    return [{'INFO'}, f"Success unregister " + extension.name + " extension."]
+
      
 ### Templates Control
 def CMP_addTemplate(context, new_name = "New Template"):
 
     if new_name == "New Template":
-        if len(context.scene.CSM_Database) > 0:
-            new_name = context.scene.CSM_Database[-1].name + " 1"
+        if len(context.scene.CSM.database) > 0:
+            new_name = context.scene.CSM.database[-1].name + " 1"
         
-    template = context.scene.CSM_Database.add()
+    template = context.scene.CSM.database.add()
 
     template.name = new_name
 
     context.workspace.CSM_TemplateName = template.name
 
 def CMP_removeTemplate(context, index):
-    if len(context.scene.CSM_Database) > 0:
-            context.scene.CSM_Database.remove(index)
+    if len(context.scene.CSM.database) > 0:
+            context.scene.CSM.database.remove(index)
             
-    if len(context.scene.CSM_Database) > 0:
-        bpy.context.workspace.CSM_TemplateName = bpy.context.scene.CSM_Database[0].name
+    if len(context.scene.CSM.database) > 0:
+        bpy.context.workspace.CSM_TemplateName = bpy.context.scene.CSM.database[0].name
 
 def CMP_editTemplate(context, template_index, name):
-    template = context.scene.CSM_Database[template_index]
+    template = context.scene.CSM.database[template_index]
     template.name = name
 
 def CMP_addTemplatesFiles(context, new_name):
-    templateFile = context.scene.CSM_TemplatesFilesCollection.add()
+    templateFile = context.scene.CSM.templatesFilesCollection.add()
     templateFile.name = new_name[0:new_name.find(".json")]
 
 def CMP_removeTemplatesFiles(context, name):
-    if len(context.scene.CSM_TemplatesFilesCollection) > 0:
-        index = context.scene.CSM_TemplatesFilesCollection.find(name)
-        context.scene.CSM_TemplatesFilesCollection.remove(index)
+    if len(context.scene.CSM.templatesFilesCollection) > 0:
+        index = context.scene.CSM.templatesFilesCollection.find(name)
+        context.scene.CSM.templatesFilesCollection.remove(index)
 
 ### Scripts Control
 def CMP_addScript(context, template_index, name = "Test", description = "Test Do", icon = "PREFERENCES", path = "Test.py", status=False):
-    template = context.scene.CSM_Database[template_index]
+    template = context.scene.CSM.database[template_index]
     script = template.scripts.add()
 
     script.name = name
@@ -457,11 +497,11 @@ def CMP_addScript(context, template_index, name = "Test", description = "Test Do
     script.status = status
 
 def CMP_removeScript(context, template_index, script_index):
-    if len(context.scene.CSM_Database[template_index].scripts) > 0:
-        context.scene.CSM_Database[template_index].scripts.remove(script_index)
+    if len(context.scene.CSM.database[template_index].scripts) > 0:
+        context.scene.CSM.database[template_index].scripts.remove(script_index)
  
 def CMP_editScript(context, template_index, script_index, name = "Test", description = "Test Do", icon = "PREFERENCES", path = "Test.py"):
-    template = context.scene.CSM_Database[template_index]
+    template = context.scene.CSM.database[template_index]
     script = template.scripts[script_index]
 
     script.name = name
@@ -471,7 +511,7 @@ def CMP_editScript(context, template_index, script_index, name = "Test", descrip
 
 ### Arguments Control
 def CMP_addArgs(context, template_index, script_index, type, name = "Test Arg", description = "Test Arg Do", value=0):
-    template = context.scene.CSM_Database[template_index]
+    template = context.scene.CSM.database[template_index]
     script = template.scripts[script_index]
     args = script.args
     
@@ -491,7 +531,7 @@ def CMP_addArgs(context, template_index, script_index, type, name = "Test Arg", 
     arg[key] = value
  
 def CMP_editArgs(context, template_index, script_index, arg_index, type, name = "Test Arg", description = "Test Arg Do", value=0):
-    template = context.scene.CSM_Database[template_index]
+    template = context.scene.CSM.database[template_index]
     script = template.scripts[script_index]
     arg = script.args[arg_index]
     
@@ -504,7 +544,7 @@ def CMP_editArgs(context, template_index, script_index, arg_index, type, name = 
     arg[key] = value[key]
 
 def CMP_removeArgs(context, template_index, script_index, arg_index):
-    template = context.scene.CSM_Database[template_index]
+    template = context.scene.CSM.database[template_index]
     script = template.scripts[script_index]
     script.args.remove(arg_index)
 
