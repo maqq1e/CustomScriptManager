@@ -1017,9 +1017,11 @@ class UCSM_TemplateSave(bpy.types.Operator):
     def execute(self, context):
         global_ucsm = context.window_manager.ucsm
 
-        data = dataToJson(global_ucsm.scripts_list, global_ucsm.extensions_list)
+        if global_ucsm.templates != "NONE":
 
-        exportJson(context, data, global_ucsm.templates)
+            data = dataToJson(global_ucsm.scripts_list, global_ucsm.extensions_list)
+
+            exportJson(context, data, global_ucsm.templates)
 
         global_ucsm.is_save = False
 
