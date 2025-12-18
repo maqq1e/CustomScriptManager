@@ -1,25 +1,23 @@
-# CSM - Custom Script Manager
-![Preview](https://public-files.gumroad.com/095rbpxkwmfs1xrwzabozt13ylxt)
+# UCSM - Universal Custom Script Manager
+<img width="733" height="995" alt="image" src="https://github.com/user-attachments/assets/e75e373f-b3b7-4a36-bff9-dd84dce9ba84" />
 
 # Installation
 
-# [Github Releases](https://github.com/maqq1e/CustomScriptManager/releases) & [Gumroad](https://maqq1e.gumroad.com/l/customscriptmanager)
+# [Github Releases](https://github.com/maqq1e/CustomScriptManager/releases)
 
 # Features
-- Can be use separate templates for each workspace
-- List all available .py scripts in chosen folder
+- Can be use separate templates
 - Support custom parameters for custom scripts
-- Can automatically load simple addon extension for each template separately
-- You can load custom script for global scope without link to template
+- Can automatically load single file addon extension for each template separately
+- Also you can choose local text files inside blender as execution scripts
 
 # Usage
 
 **For more specific information you should look at [FULL-SIZE DOCUMENTATION](https://github.com/maqq1e/CustomScriptManager/wiki)** 
 
 - Insert path of target folder in addon preferences
-- Create your first .json template file
+- Create your first template file
 - Rename it if you want
-- Create you first template
 - Create new .py scripts and save them in target folder
 - Set up extensions and scripts as you like
 - Don't forget check out your script has corrected format
