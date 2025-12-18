@@ -549,9 +549,9 @@ def _updateCurrentTemplateScripts(self, context):
 
     for ext in data["extensions"]:
         item = registerCurrentExtension(None, context, ext["path"], ext["name"])
-
-        if ext["data_block"]:
-            item.data_block = ext["data_block"]
+        if item:
+            if ext["data_block"]:
+                item.data_block = ext["data_block"]
 
     for script in data["scripts"]:
 
