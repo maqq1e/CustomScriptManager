@@ -756,10 +756,6 @@ class UCSM_SetupPanel(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = 'Script Manager' # You may edit this field
-
-    def draw_header(self, context):
-        """Optional: Draw the header of the panel."""
-        self.layout.label(icon='KEY_COMMAND')  # Example header icon
     
     def draw(self, context):
         global_ucsm = context.window_manager.ucsm
@@ -803,10 +799,6 @@ class UCSM_Extensions(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
 
-    def draw_header(self, context):
-        """Optional: Draw the header of the panel."""
-        self.layout.label(icon='SYSTEM')  # Example header icon
-
     @classmethod
     def poll(cls, context):
         global_ucsm = context.window_manager.ucsm
@@ -841,10 +833,6 @@ class UCSM_Scripts(bpy.types.Panel):
     bl_idname = "UCSM_PT_scripts"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
-    
-    def draw_header(self, context):
-        """Optional: Draw the header of the panel."""
-        self.layout.label(icon='SCRIPT')  # Example header icon
 
     @classmethod
     def poll(cls, context):
